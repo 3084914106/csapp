@@ -25,6 +25,41 @@ driver.pl*	- Driver program that uses btest and dlc to autograde bits.c
 Driverhdrs.pm   - Header file for optional "Beat the Prof" contest
 fshow.c		- Utility for examining floating-point representations
 ishow.c		- Utility for examining integer representations
+CS:APP 数据实验
+
+学生指南
+
+你的目标是在不违反任何编码准则的前提下，修改你的 bits.c 副本，使其通过 btest 中的所有测试。
+
+文件列表：
+
+Makefile	- 用于编译 btest、fshow 和 ishow
+
+README		- 本文件
+
+bits.c		- 你需要修改并提交的文件
+
+bits.h		- 头文件
+
+btest.c		- btest 主程序
+
+btest.h	- 用于构建 btest
+
+decl.c	- 用于构建 btest
+
+tests.c       - 用于构建 btest
+
+tests-header.c- 用于构建 btest
+
+dlc*		- 规则检查编译器二进制文件（数据实验编译器）
+
+driver.pl*	- 使用 btest 和 dlc 对 bits.c 进行自动评分的驱动程序
+
+Driverhdrs.pm   - 可选的“击败教授”竞赛头文件
+
+fshow.c		- 用于检查浮点表示的实用程序
+
+ishow.c		- 用于检查整数表示的实用程序
 
 ***********************************************************
 1. Modifying bits.c and checking it for compliance with dlc

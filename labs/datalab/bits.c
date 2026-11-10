@@ -2,7 +2,7 @@
  * CS:APP Data Lab 
  * 
  * <Please put your name and userid here>
- * 
+ * fuxinlong
  * bits.c - Source file with your solutions to the Lab.
  *          This is the file you will hand in to your instructor.
  *
@@ -143,7 +143,7 @@ NOTES:
  *   Rating: 1
  */
 int bitXor(int x, int y) {
-  return 2;
+  return  ~(~(x&~y)&~(~x&y));
 }
 /* 
  * tmin - return minimum two's complement integer 
@@ -153,7 +153,7 @@ int bitXor(int x, int y) {
  */
 int tmin(void) {
 
-  return 2;
+  return 1 << 31;
 
 }
 //2
@@ -165,7 +165,7 @@ int tmin(void) {
  *   Rating: 1
  */
 int isTmax(int x) {
-  return 2;
+  return !((x + 1) ^ ~x) & !!(x + 1)     ;
 }
 /* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
@@ -175,8 +175,8 @@ int isTmax(int x) {
  *   Max ops: 12
  *   Rating: 2
  */
-int allOddBits(int x) {
-  return 2;
+int allOddBits(int x) { 
+  return !(~x & ((0xAA) | (0xAA << 8) | (0xAA << 16) | (0xAA << 24)));
 }
 /* 
  * negate - return -x 
@@ -186,7 +186,7 @@ int allOddBits(int x) {
  *   Rating: 2
  */
 int negate(int x) {
-  return 2;
+  return ~x + 1;
 }
 //3
 /* 
@@ -199,7 +199,7 @@ int negate(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
-  return 2;
+  return ! ((x + ~0x30 + 1) >> 31) & ! ((0x39 + ~x + 1) >> 31);
 }
 /* 
  * conditional - same as x ? y : z 
@@ -209,7 +209,7 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return 2;
+  return ((~(!!x) + 1 )& y) | (~(~(!!x) + 1) & z);
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -219,7 +219,7 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+  return ( ((x ^ y) >> 31)) & ((x >> 31) & 1) | ( (!( (x ^ y) >> 31 )) & (!( (y + ~x + 1) >> 31 )));
 }
 //4
 /* 
@@ -231,7 +231,7 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4 
  */
 int logicalNeg(int x) {
-  return 2;
+  return (((x|(~x+1))>>31)+1);
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
@@ -246,7 +246,20 @@ int logicalNeg(int x) {
  *  Rating: 4
  */
 int howManyBits(int x) {
-  return 0;
+  int y = x ^ (x >> 31);
+  int b16 = !!(y >> 16) << 4;
+  y = y >> b16; 
+  int b8 = !!(y >> 8) << 3;
+  y = y >> b8;
+  int b4 = !!(y >> 4) << 2;
+  y = y >> b4;
+  int b2 = !!(y >> 2) << 1;
+  y = y >> b2;
+  int b1 = !!(y >> 1);
+  y = y >> b1;
+  int b0 = y;
+  return b16 + b8 + b4 + b2 + b1 + b0 + 1 ;
+
 }
 //float
 /* 
@@ -261,8 +274,21 @@ int howManyBits(int x) {
  *   Rating: 4
  */
 unsigned floatScale2(unsigned uf) {
-  return 2;
-}
+  int s = (uf >> 31) & 1;
+  int exp = (uf >> 23) & 0xFF;
+  int frac = uf & 0x7FFFFF;
+  if(exp == 255)return uf;
+  if(exp == 0){
+    
+
+  return (uf << 1)|(s << 31);
+  }
+  exp = exp + 1;
+  if (exp == 255) {
+    return (s << 31) | (0xFF << 23); // 无穷大
+  }
+  return (s << 31) | (exp << 23) | frac;
+  }
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
  *   for floating point argument f.
@@ -276,7 +302,29 @@ unsigned floatScale2(unsigned uf) {
  *   Rating: 4
  */
 int floatFloat2Int(unsigned uf) {
-  return 2;
+  int s = (uf >> 31) & 1;
+  int exp = (uf >> 23) & 0xFF;
+  int frac = uf & 0x7FFFFF;
+  int E = exp - 127;
+
+  if (exp == 255) return 0x80000000u;
+  if (exp == 0 || E < 0) return 0;
+  if (E >= 31) return 0x80000000u;
+   
+  unsigned val = (1 << 23) | frac; 
+   int result;
+  if (E >= 23) {
+    result = val << (E - 23);
+  } else {
+    result = val >> (23 - E);
+  }
+
+  // 加上符号
+  if (s) {
+    return -result; 
+  }
+  return result;
+
 }
 /* 
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
@@ -292,5 +340,19 @@ int floatFloat2Int(unsigned uf) {
  *   Rating: 4
  */
 unsigned floatPower2(int x) {
-    return 2;
+    if (x > 127) {
+        return 0x7F800000;
+    }
+    
+    // 2. 下溢，返回 0
+    if (x < -149) {
+        return 0;
+    }
+    if (x < -126) {
+        // 此时 E = -126, M = 2^(x+126)
+        // frac = M * 2^23 = 2^(x+149)
+        return 1 << (x + 149);
+    }
+     return (x + 127) << 23;
+
 }
